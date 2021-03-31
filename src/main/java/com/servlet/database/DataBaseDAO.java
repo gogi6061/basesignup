@@ -27,7 +27,7 @@ public class DataBaseDAO {
             else {
                 System.out.println("Cоединения с БД установлено!");
             }
-            assert connection != null;
+
 
             statemaent = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
@@ -40,12 +40,25 @@ public class DataBaseDAO {
     }
 
 
-    public void create(String name, String password, String seesionId) throws SQLException {
+    public void create(String name, String password, String sessionId) throws SQLException {
 
         String s = String.format("""
-                INSERT INTO "users" (name, password,sessionid)( 
+                INSERT INTO "users" (name, password, sessionid)( 
                                         VALUES ('%s','%s','%s') 
-                                    );""", name, password, seesionId);
+                                    );""", name, password, sessionId);
+
+        statemaent.addBatch(s);
+        statemaent.execute(s);
+
+
+    }
+
+    public void createToStates(String name, String password) throws SQLException {
+
+        String s = String.format("""
+                INSERT INTO "users" (name, password)( 
+                                        VALUES ('%s','%s') 
+                                    );""", name, password);
 
         statemaent.addBatch(s);
         statemaent.execute(s);
@@ -58,10 +71,8 @@ public class DataBaseDAO {
                 SELECT * FROM "users"
                  WHERE NAME = '%s' OR PASSWORD = '%s' """, s1, s2);
 
-        //statemaent.addBatch(s);
 
         ResultSet resultSet = statemaent.executeQuery(s);
-
 
 
         if (resultSet.next()) {
@@ -71,20 +82,27 @@ public class DataBaseDAO {
         }
     }
 
-    public String getSessionID(String s1, String s2) throws SQLException {
+    public boolean checkSessionID(String s1) throws SQLException {
         String s = String.format("""
-                SELECT SESSIONID FROM "USERS"
-                WHERE NAME = '%s' and PASSWORD = '%s' """, s1, s2);
+                SELECT * FROM "users"
+                WHERE sessionid = '%s' """, s1);
 
-        ResultSet sessionId = statemaent.executeQuery(s);
-
-        if(sessionId.next()){
-            return sessionId.getString("sessionid");
-        }else{
-            return "пустая строка";
-        }
+        ResultSet resultSet = statemaent.executeQuery(s);
 
 
+        return resultSet.next();
+
+
+    }
+
+    public void updateSessionID(String s1, String s2, String s3) throws SQLException {
+        String s = String.format("""
+                UPDATE USERS SET SESSIONID = '%s'
+                WHERE NAME = '%s' AND PASSWORD = '%s'
+                                
+                """, s3, s1, s2);
+
+        statemaent.execute(s);
 
     }
 

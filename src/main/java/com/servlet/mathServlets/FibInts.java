@@ -1,18 +1,24 @@
 package com.servlet.mathServlets;
 
 
+import com.servlet.database.DataBaseDAO;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.stream.Stream;
 
 @WebServlet("/fibInts")
 public class FibInts extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        DataBaseDAO dao = DataBaseDAO.returnDbDAO();
+        HttpSession session = req.getSession();
         try {
 
 
@@ -22,9 +28,22 @@ public class FibInts extends HttpServlet {
         }catch (Exception exception){
             req.setAttribute("fib", "нет результата");
 
-        }finally {
-            req.getRequestDispatcher("jsp/mathJSP/fibInts.jsp").forward(req, resp);
 
+        }finally {
+            try {
+                if (dao.checkSessionID(session.getId())) {
+                    req.getRequestDispatcher("/jsp/mathJSP/fibInts.jsp").forward(req, resp);
+
+                } else {
+                    resp.sendRedirect("/homepage");
+
+                }
+
+
+                //req.getRequestDispatcher("/jsp/mathJSP/summer.jsp").forward(req, resp);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
 
 
